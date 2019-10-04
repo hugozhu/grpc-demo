@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"fmt"
+	"io"
 	"log"
 	"sync"
 
@@ -48,8 +50,23 @@ func (*HelloServiceServerImpl) LotsOfReplies(req *hello.HelloRequest, stream hel
 }
 
 //LotsOfGreetings is the implementation of interface function
-func (*HelloServiceServerImpl) LotsOfGreetings(hello.HelloService_LotsOfGreetingsServer) error {
-	return nil
+func (*HelloServiceServerImpl) LotsOfGreetings(stream hello.HelloService_LotsOfGreetingsServer) error {
+	count := 0
+	var greeting string
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			resp := &hello.HelloResponse{
+				Reply: greeting + " <= " + fmt.Sprintf("%d", count),
+			}
+			return stream.SendAndClose(resp)
+		}
+		if err != nil {
+			return err
+		}
+		greeting = req.GetGreeting()
+		count++
+	}
 }
 
 //BidiHello is the implementation of interface function

@@ -22,7 +22,7 @@ func SayHello(client hello.HelloServiceClient) {
 	}
 }
 
-func SayHelloInStream(client hello.HelloServiceClient) {
+func SayHelloWithStreamOut(client hello.HelloServiceClient) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
 	req := &hello.HelloRequest{}
 	req.Greeting = "Hello " + time.Now().String()
@@ -41,4 +41,28 @@ func SayHelloInStream(client hello.HelloServiceClient) {
 		}
 		log.Println(reply.GetReply())
 	}
+}
+
+func SayHelloWithStreamIn(client hello.HelloServiceClient) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
+	req := &hello.HelloRequest{}
+	req.Greeting = "Hello " + time.Now().String()
+	stream, err := client.LotsOfGreetings(ctx)
+	if err != nil {
+		cancel()
+		return
+	}
+	for i := 0; i < 2; i++ {
+		if err := stream.Send(req); err != nil {
+			if err == io.EOF {
+				break
+			}
+			log.Fatalf("%v.Send(%v) = %v", stream, req, err)
+		}
+	}
+	reply, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatalf("%v.CloseAndRecv() got error %v, want %v", stream, err, nil)
+	}
+	log.Println(reply.GetReply())
 }
