@@ -19,7 +19,16 @@ func (*HelloServiceServerImpl) SayHello(ctx context.Context, req *hello.HelloReq
 }
 
 //LotsOfReplies is the implementation of interface function
-func (*HelloServiceServerImpl) LotsOfReplies(*hello.HelloRequest, hello.HelloService_LotsOfRepliesServer) error {
+func (*HelloServiceServerImpl) LotsOfReplies(req *hello.HelloRequest, stream hello.HelloService_LotsOfRepliesServer) error {
+	resp := &hello.HelloResponse{
+		Reply: req.GetGreeting(),
+	}
+	if err := stream.Send(resp); err != nil {
+		return err
+	}
+	if err := stream.Send(resp); err != nil {
+		return err
+	}
 	return nil
 }
 

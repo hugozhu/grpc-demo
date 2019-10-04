@@ -48,6 +48,7 @@ func runClient() {
 	defer conn.Close()
 	helloServiceClient := hello.NewHelloServiceClient(conn)
 	client.SayHello(helloServiceClient)
+	client.SayHelloInStream(helloServiceClient)
 }
 
 func runServer() {
