@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"log"
+	"sync"
 
 	"github.com/hugozhu/grpc-demo/hello"
 )
@@ -20,15 +22,28 @@ func (*HelloServiceServerImpl) SayHello(ctx context.Context, req *hello.HelloReq
 
 //LotsOfReplies is the implementation of interface function
 func (*HelloServiceServerImpl) LotsOfReplies(req *hello.HelloRequest, stream hello.HelloService_LotsOfRepliesServer) error {
-	resp := &hello.HelloResponse{
-		Reply: req.GetGreeting(),
-	}
-	if err := stream.Send(resp); err != nil {
-		return err
-	}
-	if err := stream.Send(resp); err != nil {
-		return err
-	}
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		resp := &hello.HelloResponse{
+			Reply: req.GetGreeting() + " <= 1",
+		}
+		if err := stream.Send(resp); err != nil {
+			log.Println(err)
+		}
+		wg.Done()
+	}()
+
+	go func() {
+		resp := &hello.HelloResponse{
+			Reply: req.GetGreeting() + " <= 2",
+		}
+		if err := stream.Send(resp); err != nil {
+			log.Println(err)
+		}
+		wg.Done()
+	}()
+	wg.Wait()
 	return nil
 }
 
