@@ -1,18 +1,18 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"log"
 	"net"
-	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/testdata"
 
+	"github.com/hugozhu/grpc-demo/client"
 	"github.com/hugozhu/grpc-demo/hello"
+	"github.com/hugozhu/grpc-demo/server"
 )
 
 var (
@@ -46,44 +46,8 @@ func runClient() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	defer conn.Close()
-	client := hello.NewHelloServiceClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
-	req := &hello.HelloRequest{}
-	req.Greeting = "Hello"
-	resp, err := client.SayHello(ctx, req)
-	if err != nil {
-		cancel()
-		fmt.Println(err)
-	} else {
-		fmt.Println(resp.GetReply())
-	}
-}
-
-//HelloServiceServerImpl is the implementation of HelloServiceServer
-type HelloServiceServerImpl struct {
-}
-
-//SayHello is the implementation of interface function
-func (*HelloServiceServerImpl) SayHello(ctx context.Context, req *hello.HelloRequest) (*hello.HelloResponse, error) {
-	resp := &hello.HelloResponse{
-		Reply: req.GetGreeting(),
-	}
-	return resp, nil
-}
-
-//LotsOfReplies is the implementation of interface function
-func (*HelloServiceServerImpl) LotsOfReplies(*hello.HelloRequest, hello.HelloService_LotsOfRepliesServer) error {
-	return nil
-}
-
-//LotsOfGreetings is the implementation of interface function
-func (*HelloServiceServerImpl) LotsOfGreetings(hello.HelloService_LotsOfGreetingsServer) error {
-	return nil
-}
-
-//BidiHello is the implementation of interface function
-func (*HelloServiceServerImpl) BidiHello(hello.HelloService_BidiHelloServer) error {
-	return nil
+	helloServiceClient := hello.NewHelloServiceClient(conn)
+	client.SayHello(helloServiceClient)
 }
 
 func runServer() {
@@ -109,7 +73,7 @@ func runServer() {
 	}
 
 	grpcServer := grpc.NewServer(opts...)
-	hello.RegisterHelloServiceServer(grpcServer, &HelloServiceServerImpl{})
+	hello.RegisterHelloServiceServer(grpcServer, &server.HelloServiceServerImpl{})
 	grpcServer.Serve(lis)
 }
 
