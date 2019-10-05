@@ -50,6 +50,7 @@ func runClient() {
 	client.SayHello(helloServiceClient)
 	client.SayHelloWithStreamOut(helloServiceClient)
 	client.SayHelloWithStreamIn(helloServiceClient)
+	client.SayHelloWithStreamBidi(helloServiceClient)
 }
 
 func runServer() {

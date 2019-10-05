@@ -75,6 +75,23 @@ func (*HelloServiceServerImpl) LotsOfGreetings(stream hello.HelloService_LotsOfG
 }
 
 //BidiHello is the implementation of interface function
-func (*HelloServiceServerImpl) BidiHello(hello.HelloService_BidiHelloServer) error {
-	return nil
+func (*HelloServiceServerImpl) BidiHello(stream hello.HelloService_BidiHelloServer) error {
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		resp := &hello.HelloResponse{
+			Reply: req.GetGreeting(),
+		}
+		if err = stream.Send(resp); err != nil {
+			return err
+		}
+		if err = stream.Send(resp); err != nil {
+			return err
+		}
+	}
 }
