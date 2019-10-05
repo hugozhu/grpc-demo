@@ -52,7 +52,7 @@ func SayHelloWithStreamIn(client hello.HelloServiceClient) {
 		cancel()
 		return
 	}
-	for i := 0; i < 2; i++ {
+	for i := 0; i < 3; i++ {
 		if err := stream.Send(req); err != nil {
 			if err == io.EOF {
 				break

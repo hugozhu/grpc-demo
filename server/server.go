@@ -25,25 +25,30 @@ func (*HelloServiceServerImpl) SayHello(ctx context.Context, req *hello.HelloReq
 //LotsOfReplies is the implementation of interface function
 func (*HelloServiceServerImpl) LotsOfReplies(req *hello.HelloRequest, stream hello.HelloService_LotsOfRepliesServer) error {
 	var wg sync.WaitGroup
+	var mutex = &sync.Mutex{}
 	wg.Add(2)
 	go func() {
+		defer wg.Done()
 		resp := &hello.HelloResponse{
 			Reply: req.GetGreeting() + " <= 1",
 		}
+		mutex.Lock()
 		if err := stream.Send(resp); err != nil {
-			log.Println(err)
+			log.Println("error 1", err)
 		}
-		wg.Done()
+		mutex.Unlock()
 	}()
 
 	go func() {
+		defer wg.Done()
 		resp := &hello.HelloResponse{
 			Reply: req.GetGreeting() + " <= 2",
 		}
+		mutex.Lock()
 		if err := stream.Send(resp); err != nil {
-			log.Println(err)
+			log.Println("error 2", err)
 		}
-		wg.Done()
+		mutex.Unlock()
 	}()
 	wg.Wait()
 	return nil
